@@ -433,7 +433,6 @@ if (document.getElementById("map")) {
                         }
         
                         output = `
-                            <h1>بيانات التلوث لشهر ${currentMonth} للعام ${currentYear}</h1>
                             <strong>جودة الهواء:</strong> <span style="color:${color};">${status}</span> <br>
                             <ul>
                                 <li>أول أكسيد الكربون (CO): ${co} µg/m³</li>
