@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الغازات</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.26/esri/themes/light/main.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://js.arcgis.com/4.26/"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <ul>
+            <li><a href="index.html">الرئيسية</a></li>
+            <li><a href="gases.html">الغازات</a></li>
+            <li><a href="pollution.html">التلوث</a></li>
+            <li><a href="https://www.facebook.com/koko.kokorafat.9">اتصل بنا</a></li>
+        </ul>
+    </nav>
+
+    <div id="viewDiv"></div>
+
+    <div id="timeControls">
+        <label for="gasSelect">اختر الغاز:</label>
+        <select id="gasSelect" title="حدد نوع الغاز لعرض بياناته على الخريطة">
+            <option value="" selected disabled>اختر غازًا</option>
+            <option value="NO2">NO₂</option>
+            <option value="CO">CO</option>
+            <option value="SO2">SO₂</option>
+            <option value="TSP">TSP</option>
+            <option value="Pm10">Pm10</option>
+            <option value="Pm2.5">Pm2.5</option>
+        </select>
+
+        <label for="yearSelect">اختر السنة:</label>
+        <select id="yearSelect" title="حدد سنة بين 2015 و2024">
+            <option value="0">2015</option>
+            <option value="1">2016</option>
+            <option value="2">2017</option>
+            <option value="3">2018</option>
+            <option value="4">2019</option>
+            <option value="5">2020</option>
+            <option value="6">2021</option>
+            <option value="7">2022</option>
+            <option value="8">2023</option>
+            <option value="9">2024</option>
+        </select>
+        
+        <div class="slidecontainer">
+            <label for="yearSlider">السنة:</label>
+            <input type="range" min="0" max="9" value="0" class="slider" id="yearSlider" title="اسحب لاختيار سنة بين 2015 و2024">
+            <p>السنة الحالية: <span id="yearValue">2015</span></p>
+        </div>
+        
+        <div class="buttons">
+            <button type="button" id="startBtn">start</button>
+            <button type="button" id="pauseBtn">pause</button>
+            <button type="button" id="stopResetBtn">Stop and Reset</button>
+        </div>
+    </div>
+
+    <div id="legend"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

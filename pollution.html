@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التلوث</title>
+    <!-- ربط مكتبة Leaflet لعرض الخرائط -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- ربط مكتبة Leaflet Draw لإضافة أدوات الرسم -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <!-- ربط ملف التنسيق الخاص بنا -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- شريط التنقل العلوي -->
+    <nav class="navbar">
+        <ul>
+            <li><a href="index.html">الرئيسية</a></li>
+            <li><a href="gases.html">الغازات</a></li>
+            <li><a href="pollution.html">التلوث</a></li>
+            <li><a href="https://www.facebook.com/koko.kokorafat.9">اتصل بنا</a></li>
+        </ul>
+    </nav>
+
+    <!-- عنوان الصفحة -->
+    <h1>رصد التلوث الجوي</h1>
+
+    <!-- قسم البحث عن إحداثيات الدول -->
+    <div class="showdiv">
+        <h2>البحث عن إلتلوث العالمي</h2>
+        <div class="searchandbt">
+            <!-- حقل إدخال اسم الدولة -->
+            <input class="searchbarp" type="text" id="countryInput" placeholder="....أدخل الاسم المطلوب" />
+            <!-- زر البحث -->
+            <button class="searchbarpb" type="button" id="searchBtn">بحث</button>
+        </div>
+    </div>
+
+    <!-- منطقة عرض نتائج البحث -->
+    <div id="result"></div>
+
+    <!-- حاوية الخريطة -->
+    <div id="map"></div>
+<!-- hi -->
+    <!-- منطقة عرض بيانات التلوث -->
+    <div id="info"></div>
+   <div class="date-range-container">
+        <div class="input-group">
+          <label for="startDate" class="form-label">تاريخ البداية:</label>
+          <input type="datetime-local" id="startDate" name="startDate" class="form-input">
+        </div>
+
+        <div class="input-group">
+          <label for="endDate" class="form-label">تاريخ النهاية:</label>
+          <input type="datetime-local" id="endDate" name="endDate" class="form-input">
+        </div>
+
+        <button id="fetchHistoryBtn" class="fetch-button">جلب البيانات التاريخية</button>
+        <div id="historyResult"></div>
+      </div>
+    
+
+    <!-- ربط ملف JavaScript الخاص بنا -->
+    <script src="script.js"></script>
+</body>
+</html>
