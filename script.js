@@ -1,4 +1,3 @@
-// منطق صفحة الغازات (gases.html)
 if (document.getElementById("viewDiv")) {
     if (typeof require === "undefined") {
         console.error("خطأ: لم يتم تحميل ArcGIS JS API. تأكدي من إضافة <script src='https://js.arcgis.com/4.26/'> في gases.html");
@@ -15,19 +14,19 @@ if (document.getElementById("viewDiv")) {
                 basemap: "satellite"
             });
 
-            // إضافة طبقة الحدود كـ Feature Layer (ستظهر على الخريطة فقط وليس في الـ Legend)
+            // إضافة طبقة الحدود كـ Feature Layer
             var boundaryLayer = new FeatureLayer({
-                url: "https://services1.arcgis.com/DJeqIQwJJ7wxtPdg/arcgis/rest/services/tsp15_WFL1/FeatureServer", // استبدلي هذا بالرابط الفعلي
+                url: "https://services1.arcgis.com/DJeqIQwJJ7wxtPdg/arcgis/rest/services/tsp15_WFL1/FeatureServer",
                 title: "حدود المنطقة",
-                listMode: "hide" // هذا يمنع ظهور الطبقة في الـ Legend
+                listMode: "hide"
             });
-            map.add(boundaryLayer); // طبقة الحدود تُضاف إلى الخريطة هنا وستظهر دائمًا
+            map.add(boundaryLayer);
 
             // إعداد عرض الخريطة
             var view = new MapView({
                 container: "viewDiv",
                 map: map,
-                center: [31.3667, 30.262], // إحداثيات القاهرة
+                center: [31.3667, 30.262],
                 zoom: 13,
                 constraints: {
                     minZoom: 5,
@@ -41,10 +40,125 @@ if (document.getElementById("viewDiv")) {
                 container: "legend"
             });
 
+            // متغير لتتبع آخر طبقة تم تعديلها
+            let lastAdjustedLayer = null;
+
+            // دالة لتطبيق التعديلات (إزالة السالب وعكس الترتيب لغاز SO₂)
+            function applyLegendAdjustments() {
+                var currentLayerTitle = legend.layerInfos[0]?.layer?.title || "";
+                var labels = document.querySelectorAll("#legend .esri-legend__layer-cell--info");
+                if (!labels.length) {
+                    console.log("لم يتم العثور على تسميات في المفتاح لـ", currentLayerTitle);
+                    return false;
+                }
+
+                // إذا كانت الطبقة هي نفسها التي تم تعديلها سابقًا، لا حاجة لإعادة التعديل ما لم تتغير التسميات
+                if (lastAdjustedLayer === currentLayerTitle) {
+                    const currentLabels = Array.from(labels).map(label => label.textContent);
+                    if (currentLabels.some(label => label.startsWith("-"))) {
+                        console.log("تم اكتشاف تسميات مع سالب، سيتم إعادة التعديل لـ", currentLayerTitle);
+                    } else if (currentLayerTitle.startsWith("SO₂")) {
+                        const layerBody = document.querySelector("#legend .esri-legend__layer-body");
+                        if (layerBody) {
+                            const rows = Array.from(layerBody.querySelectorAll(".esri-legend__layer-row"));
+                            const firstLabel = rows[0]?.querySelector(".esri-legend__layer-cell--info")?.textContent;
+                            const lastLabel = rows[rows.length - 1]?.querySelector(".esri-legend__layer-cell--info")?.textContent;
+                            const firstValue = parseFloat(firstLabel?.split(" - ")[0]);
+                            const lastValue = parseFloat(lastLabel?.split(" - ")[0]);
+                            if (firstValue > lastValue) {
+                                console.log("الترتيب عاد إلى التنازلي لغاز SO₂، سيتم إعادة العكس");
+                            } else {
+                                console.log("التعديلات لا تزال مطبقة لـ", currentLayerTitle);
+                                return false;
+                            }
+                        }
+                    } else {
+                        console.log("التعديلات لا تزال مطبقة لـ", currentLayerTitle);
+                        return false;
+                    }
+                }
+
+                console.log("التسميات قبل التعديل لـ", currentLayerTitle, ":", Array.from(labels).map(label => label.textContent));
+
+                // إيقاف المراقب مؤقتًا لمنع الحلقات اللانهائية
+                observer.disconnect();
+
+                // إزالة السالب من التسميات
+                labels.forEach(label => {
+                    let text = label.textContent.trim();
+                    if (text.startsWith("-")) {
+                        text = text.replace(/^-(\d+\.\d+)\s*-\s*-(\d+\.\d+)/, "$1 - $2");
+                        label.textContent = text;
+                    }
+                });
+
+                console.log("التسميات بعد إزالة السالب لـ", currentLayerTitle, ":", Array.from(labels).map(label => label.textContent));
+
+                // عكس ترتيب النطاقات فقط إذا كان الغاز هو SO₂
+                if (currentLayerTitle.startsWith("SO₂")) {
+                    const layerBody = document.querySelector("#legend .esri-legend__layer-body");
+                    if (layerBody) {
+                        const rows = Array.from(layerBody.querySelectorAll(".esri-legend__layer-row"));
+                        console.log("النطاقات قبل العكس (SO₂):", rows.map(row => row.querySelector(".esri-legend__layer-cell--info").textContent));
+                        // عكس الصفوف لجعل الترتيب تصاعديًا
+                        rows.reverse();
+                        layerBody.innerHTML = "";
+                        rows.forEach(row => layerBody.appendChild(row));
+                        console.log("النطاقات بعد العكس (SO₂):", rows.map(row => row.querySelector(".esri-legend__layer-cell--info").textContent));
+                    } else {
+                        console.log("لم يتم العثور على .esri-legend__layer-body لعكس النطاقات لغاز SO₂");
+                    }
+                } else {
+                    console.log("الغاز ليس SO₂، لن يتم عكس النطاقات:", currentLayerTitle);
+                }
+
+                // تحديث آخر طبقة تم تعديلها
+                lastAdjustedLayer = currentLayerTitle;
+
+                // إعادة تشغيل المراقب بعد التعديل
+                observer.observe(document.getElementById("legend"), { childList: true, subtree: true });
+                return true;
+            }
+
+            // مراقبة تغييرات DOM لتطبيق التعديلات عند تحديث المفتاح
+            var observer = new MutationObserver(function(mutations) {
+                const hasLabels = document.querySelectorAll("#legend .esri-legend__layer-cell--info").length > 0;
+                if (hasLabels) {
+                    applyLegendAdjustments();
+                }
+            });
+
+            // استدعاء الدالة عند تحميل المفتاح لأول مرة
+            view.when(() => {
+                setTimeout(() => {
+                    const hasLabels = document.querySelectorAll("#legend .esri-legend__layer-cell--info").length > 0;
+                    if (hasLabels) {
+                        applyLegendAdjustments();
+                    } else {
+                        console.log("لم يتم العثور على تسميات في المفتاح عند التحميل الأولي");
+                    }
+                }, 1500); // تأخير 1500 ميلي ثانية لضمان استقرار المفتاح
+            });
+
+            // تطبيق التعديلات عند تغيير العرض (مثل التكبير/التصغير أو التحريك)
+            view.on("extent-change", () => {
+                setTimeout(() => {
+                    const hasLabels = document.querySelectorAll("#legend .esri-legend__layer-cell--info").length > 0;
+                    if (hasLabels) {
+                        applyLegendAdjustments();
+                    } else {
+                        console.log("لم يتم العثور على تسميات في المفتاح بعد تغيير العرض");
+                    }
+                }, 500); // تأخير صغير لضمان استقرار DOM
+            });
+
+            // بدء المراقب
+            observer.observe(document.getElementById("legend"), { childList: true, subtree: true });
+
             // قائمة السنوات من 2015 إلى 2024
             var years = ["2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024"];
 
-            // قائمة الطبقات المتاحة لكل غاز وسنة (Tile Layers)
+            // قائمة الطبقات المتاحة لكل غاز وسنة
             var layers = {
                 "NO2_2015": new TileLayer({ url: "https://tiles.arcgis.com/tiles/DJeqIQwJJ7wxtPdg/arcgis/rest/services/no2_2015_84_WTL1/MapServer", title: "NO₂ 2015" }),
                 "NO2_2016": new TileLayer({ url: "https://tiles.arcgis.com/tiles/DJeqIQwJJ7wxtPdg/arcgis/rest/services/no2_16_84_WTL1/MapServer", title: "NO₂ 2016" }),
@@ -66,7 +180,7 @@ if (document.getElementById("viewDiv")) {
                 "CO_2021": new TileLayer({ url: "https://tiles.arcgis.com/tiles/DJeqIQwJJ7wxtPdg/arcgis/rest/services/CO_2021_WTL1/MapServer", title: "CO 2021" }),
                 "CO_2022": new TileLayer({ url: "https://tiles.arcgis.com/tiles/DJeqIQwJJ7wxtPdg/arcgis/rest/services/co_22_WTL1/MapServer", title: "CO 2022" }),
                 "CO_2023": new TileLayer({ url: "https://tiles.arcgis.com/tiles/DJeqIQwJJ7wxtPdg/arcgis/rest/services/CO_23_1984_WTL1/MapServer", title: "CO 2023" }),
-                "CO_2024": new TileLayer({ url: "https://tiles.arcgis.com/tiles/DJeqIQwJJ7wxtPdg/arcgis/rest/services/co_24_WTL1/MapServer", }),
+                "CO_2024": new TileLayer({ url: "https://tiles.arcgis.com/tiles/DJeqIQwJJ7wxtPdg/arcgis/rest/services/co_24_WTL1/MapServer", title: "CO 2024" }),
 
                 "SO2_2015": new TileLayer({ url: "https://tiles.arcgis.com/tiles/DJeqIQwJJ7wxtPdg/arcgis/rest/services/SO2_2015_84_WTL1/MapServer", title: "SO₂ 2015" }),
                 "SO2_2016": new TileLayer({ url: "https://tiles.arcgis.com/tiles/DJeqIQwJJ7wxtPdg/arcgis/rest/services/so216_WTL1/MapServer", title: "SO₂ 2016" }),
@@ -89,7 +203,7 @@ if (document.getElementById("viewDiv")) {
                 "TSP_2022": new TileLayer({ url: "https://tiles.arcgis.com/tiles/DJeqIQwJJ7wxtPdg/arcgis/rest/services/tsp22_WTL1/MapServer", title: "TSP 2022" }),
                 "TSP_2023": new TileLayer({ url: "https://tiles.arcgis.com/tiles/DJeqIQwJJ7wxtPdg/arcgis/rest/services/tsp23_WTL1/MapServer", title: "TSP 2023" }),
                 "TSP_2024": new TileLayer({ url: "https://tiles.arcgis.com/tiles/DJeqIQwJJ7wxtPdg/arcgis/rest/services/tsp24_WTL1/MapServer", title: "TSP 2024" }),
-                
+
                 "Pm10_2015": new TileLayer({ url: "https://tiles.arcgis.com/tiles/DJeqIQwJJ7wxtPdg/arcgis/rest/services/pm10_15_WTL1/MapServer", title: "PM10 2015" }),
                 "Pm10_2016": new TileLayer({ url: "https://tiles.arcgis.com/tiles/DJeqIQwJJ7wxtPdg/arcgis/rest/services/pm10_16_WTL1/MapServer", title: "PM10 2016" }),
                 "Pm10_2017": new TileLayer({ url: "https://tiles.arcgis.com/tiles/DJeqIQwJJ7wxtPdg/arcgis/rest/services/pm10_17_WTL1/MapServer", title: "PM10 2017" }),
@@ -110,41 +224,53 @@ if (document.getElementById("viewDiv")) {
                 "Pm2.5_2021": new TileLayer({ url: "https://tiles.arcgis.com/tiles/DJeqIQwJJ7wxtPdg/arcgis/rest/services/ppm2_5_21_WTL1/MapServer", title: "PM2.5 2021" }),
                 "Pm2.5_2022": new TileLayer({ url: "https://tiles.arcgis.com/tiles/DJeqIQwJJ7wxtPdg/arcgis/rest/services/pm2_5_22_WTL1/MapServer", title: "PM2.5 2022" }),
                 "Pm2.5_2023": new TileLayer({ url: "https://tiles.arcgis.com/tiles/DJeqIQwJJ7wxtPdg/arcgis/rest/services/pm2_5_23_WTL1/MapServer", title: "PM2.5 2023" }),
-                "Pm2.5_2024": new TileLayer({ url: "https://tiles.arcgis.com/tiles/DJeqIQwJJ7wxtPdg/arcgis/rest/services/pm2_5_24_WTL1/MapServer", title: "PM2.5 2024" }),
+                "Pm2.5_2024": new TileLayer({ url: "https://tiles.arcgis.com/tiles/DJeqIQwJJ7wxtPdg/arcgis/rest/services/pm2_5_24_WTL1/MapServer", title: "PM2.5 2024" })
             };
 
-            var currentLayer = null; // متغير لتتبع طبقة الغاز الحالية
-            var currentIndex = 0; // مؤشر السنة الحالية
-            var animationTimer = null; // متغير لتتبع المؤقت
+            var currentLayer = null;
+            var currentIndex = 0;
+            var animationTimer = null;
 
             // دالة لتحديث الخريطة بناءً على اختيار الغاز والسنة
             function updateMap() {
+                lastAdjustedLayer = null; // إعادة تعيين عند تغيير الطبقة
                 var gas = document.getElementById("gasSelect").value;
                 var yearIndex = parseInt(document.getElementById("yearSlider").value);
                 var year = years[yearIndex];
                 var layerKey = gas + "_" + year;
 
-                // تحديث النص الذي يعرض السنة
-                document.getElementById("yearValue").innerHTML = year;
+                console.log("تحديث الخريطة لـ:", layerKey);
 
-                // تحديث القائمة المنسدلة للسنة
+                document.getElementById("yearValue").innerHTML = year;
                 document.getElementById("yearSelect").value = yearIndex;
 
-                // إزالة طبقة الغاز الحالية إذا وجدت (لكن لا نؤثر على طبقة الحدود)
                 if (currentLayer) {
                     map.remove(currentLayer);
+                    currentLayer = null;
                 }
 
-                // إعادة تعيين مفتاح الخريطة ليشمل طبقة الغاز فقط
                 legend.layerInfos = [];
 
-                // التحقق من وجود الطبقة المطلوبة
                 if (layers[layerKey]) {
                     currentLayer = layers[layerKey];
-                    map.add(currentLayer); // إضافة طبقة الغاز فوق طبقة الحدود
-                    legend.layerInfos = [{ layer: currentLayer }]; // عرض طبقة الغاز فقط في الـ Legend
-                    view.zoom = 13; // إعادة تعيين التكبير
+                    map.add(currentLayer);
+                    legend.layerInfos = [{ layer: currentLayer }];
+                    view.zoom = 13;
                     document.getElementById("legend").style.display = "block";
+
+                    currentLayer.when(() => {
+                        console.log("الطبقة تم تحميلها:", layerKey);
+                        setTimeout(() => {
+                            const hasLabels = document.querySelectorAll("#legend .esri-legend__layer-cell--info").length > 0;
+                            if (hasLabels) {
+                                applyLegendAdjustments();
+                            } else {
+                                console.log("لم يتم العثور على تسميات في المفتاح بعد تحميل الطبقة:", layerKey);
+                            }
+                        }, 1500);
+                    }).catch(err => {
+                        console.error("خطأ في تحميل الطبقة:", layerKey, err);
+                    });
                 } else {
                     console.log("لا توجد طبقة متاحة لـ:", layerKey);
                     document.getElementById("legend").style.display = "none";
@@ -158,18 +284,19 @@ if (document.getElementById("viewDiv")) {
                 }
                 animationTimer = setInterval(function() {
                     currentIndex++;
-                    if (currentIndex > 9) { // عند الوصول إلى 2024
+                    if (currentIndex > 9) {
                         clearInterval(animationTimer);
                         animationTimer = null;
-                        currentIndex = 0; // العودة إلى 2015
+                        currentIndex = 0;
                         document.getElementById("yearSlider").value = currentIndex;
                         updateMap();
                         return;
                     }
                     document.getElementById("yearSlider").value = currentIndex;
                     updateMap();
-                }, 2000); // تغيير كل ثانيتين
+                }, 2000);
             }
+
             // دالة لإيقاف التحريك
             function pauseAnimation() {
                 if (animationTimer) {
@@ -186,7 +313,7 @@ if (document.getElementById("viewDiv")) {
                 }
                 currentIndex = 0;
                 document.getElementById("yearSlider").value = currentIndex;
-                document.getElementById("yearSelect").value = currentIndex; // تحديث القائمة المنسدلة
+                document.getElementById("yearSelect").value = currentIndex;
                 updateMap();
             }
 
@@ -198,7 +325,7 @@ if (document.getElementById("viewDiv")) {
             });
             document.getElementById("yearSelect").addEventListener("change", function() {
                 currentIndex = parseInt(this.value);
-                document.getElementById("yearSlider").value = currentIndex; // تحديث الشريط الزمني
+                document.getElementById("yearSlider").value = currentIndex;
                 updateMap();
             });
             document.getElementById("startBtn").addEventListener("click", startAnimation);
@@ -210,7 +337,8 @@ if (document.getElementById("viewDiv")) {
         });
     }
 }
-// منطق صفحة التلوث (pollution.html)
+
+// باقي الكود الخاص بـ pollution.html يبقى كما هو
 if (document.getElementById("map")) {
     if (typeof L === "undefined") {
         console.error("خطأ: لم يتم تحميل Leaflet. تأكدي من إضافة <script src='https://unpkg.com/leaflet/dist/leaflet.js'>");
@@ -309,15 +437,16 @@ if (document.getElementById("map")) {
             const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000);
             const endTimestamp = Math.floor(new Date(endDate).getTime() / 1000);
 
-            if (startTimestamp < 1606348800) { // 27 نوفمبر 2020
+            if (startTimestamp < 1606348800) {
                 document.getElementById("historyResult").innerHTML = "<p style='color: red;'>البيانات التاريخية متاحة فقط من 27 نوفمبر 2020.</p>";
                 return;
             }
 
-            const lat = 30.04; // القاهرة (يمكنكِ تعديلها لتكون ديناميكية)
+            const lat = 30.04;
             const lon = 31.23;
             getPollutionData(lat, lon, null, startTimestamp, endTimestamp);
         });
+
         function getPollutionData(lat, lon, layer, start, end) {
             let url;
             if (start && end) {
@@ -325,7 +454,7 @@ if (document.getElementById("map")) {
             } else {
                 url = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${pollutionApiKey}`;
             }
-        
+
             fetch(url)
                 .then(response => {
                     if (!response.ok) {
@@ -336,15 +465,13 @@ if (document.getElementById("map")) {
                 .then(data => {
                     const list = start && end ? data.list : data.list;
                     let output = "";
-        
-                    // Get the current year and month in Arabic
+
                     const currentDate = new Date();
                     const currentYear = currentDate.getFullYear();
                     const currentMonth = currentDate.toLocaleString('ar-EG', { month: 'long' });
-        
-                    // Add the year and month header
+
                     output += `<h1>بيانات التلوث لشهر ${currentMonth} للعام ${currentYear}</h1>`;
-        
+
                     if (start && end) {
                         output += `
                             <style>
@@ -358,10 +485,7 @@ if (document.getElementById("map")) {
                                     border: 1px solid #ddd;
                                 }
                                 th {
-                                    background-color:rgb(19, 18, 18);
-                                }
-                                tr:nth-child(even) {
-                                
+                                    background-color: rgb(19, 18, 18);
                                 }
                             </style>
                             <table>
@@ -370,15 +494,15 @@ if (document.getElementById("map")) {
                                         <th>التاريخ والوقت</th>
                                         <th>جودة الهواء</th>
                                         <th>CO</th>
-                                        <th></th> <!-- Empty column between gases -->
+                                        <th></th>
                                         <th>NO₂</th>
-                                        <th></th> <!-- Empty column between gases -->
+                                        <th></th>
                                         <th>SO₂</th>
-                                        <th></th> <!-- Empty column between gases -->
+                                        <th></th>
                                         <th>O₃</th>
-                                        <th></th> <!-- Empty column between gases -->
+                                        <th></th>
                                         <th>PM2.5</th>
-                                        <th></th> <!-- Empty column between gases -->
+                                        <th></th>
                                         <th>PM10</th>
                                     </tr>
                                 </thead>
@@ -387,7 +511,7 @@ if (document.getElementById("map")) {
                         list.forEach(item => {
                             const { main: { aqi }, components, dt } = item;
                             const { co, no2, so2, o3, pm2_5, pm10 } = components;
-        
+
                             let status = "", color = "";
                             switch (aqi) {
                                 case 1: status = "جيد ✅"; color = "green"; break;
@@ -397,22 +521,22 @@ if (document.getElementById("map")) {
                                 case 5: status = "خطير ☠️"; color = "darkred"; break;
                                 default: status = "غير معروف"; color = "gray";
                             }
-        
+
                             const date = new Date(dt * 1000).toLocaleString("ar-EG");
                             output += `
                                 <tr>
                                     <td>${date}</td>
                                     <td><span style="color:${color};">${status}</span></td>
                                     <td>${co} µg/m³</td>
-                                    <td></td> <!-- Empty column between gases -->
+                                    <td></td>
                                     <td>${no2} µg/m³</td>
-                                    <td></td> <!-- Empty column between gases -->
+                                    <td></td>
                                     <td>${so2} µg/m³</td>
-                                    <td></td> <!-- Empty column between gases -->
+                                    <td></td>
                                     <td>${o3} µg/m³</td>
-                                    <td></td> <!-- Empty column between gases -->
+                                    <td></td>
                                     <td>${pm2_5} µg/m³</td>
-                                    <td></td> <!-- Empty column between gases -->
+                                    <td></td>
                                     <td>${pm10} µg/m³</td>
                                 </tr>
                             `;
@@ -421,7 +545,7 @@ if (document.getElementById("map")) {
                     } else {
                         const { main: { aqi }, components } = list[0];
                         const { co, no2, so2, o3, pm2_5, pm10 } = components;
-        
+
                         let status = "", color = "";
                         switch (aqi) {
                             case 1: status = "جيد ✅"; color = "green"; break;
@@ -431,7 +555,7 @@ if (document.getElementById("map")) {
                             case 5: status = "خطير ☠️"; color = "darkred"; break;
                             default: status = "غير معروف"; color = "gray";
                         }
-        
+
                         output = `
                             <strong>جودة الهواء:</strong> <span style="color:${color};">${status}</span> <br>
                             <ul>
@@ -444,13 +568,13 @@ if (document.getElementById("map")) {
                             </ul>
                         `;
                     }
-        
+
                     if (start && end) {
                         document.getElementById("historyResult").innerHTML = output;
                     } else {
                         document.getElementById("info").innerHTML = output;
                     }
-        
+
                     if (layer && !start && !end) {
                         const { main: { aqi }, components } = list[0];
                         const { co, no2, so2, o3, pm2_5, pm10 } = components;
@@ -463,7 +587,7 @@ if (document.getElementById("map")) {
                             case 5: status = "خطير ☠️"; color = "darkred"; break;
                             default: status = "غير معروف"; color = "gray";
                         }
-        
+
                         const popupContent = `
                             <strong>جودة الهواء:</strong> <span style="color:${color};">${status}</span> <br>
                             <ul style="padding-left: 20px; margin: 0;">
@@ -493,6 +617,5 @@ if (document.getElementById("map")) {
                     }
                 });
         }
-        
     }
 }
