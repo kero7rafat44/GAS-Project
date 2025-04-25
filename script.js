@@ -1,3 +1,4 @@
+//الغازات
 if (document.getElementById("viewDiv")) {
     if (typeof require === "undefined") {
         console.error("خطأ: لم يتم تحميل ArcGIS JS API. تأكدي من إضافة <script src='https://js.arcgis.com/4.26/'> في gases.html");
@@ -338,7 +339,7 @@ if (document.getElementById("viewDiv")) {
     }
 }
 
-// باقي الكود الخاص بـ pollution.html يبقى كما هو
+//تلوث العالمي 
 if (document.getElementById("map")) {
     if (typeof L === "undefined") {
         console.error("خطأ: لم يتم تحميل Leaflet. تأكدي من إضافة <script src='https://unpkg.com/leaflet/dist/leaflet.js'>");
@@ -426,8 +427,14 @@ if (document.getElementById("map")) {
         });
 
         document.getElementById("fetchHistoryBtn").addEventListener("click", function () {
+            const location = document.getElementById("locationInput").value.trim();
             const startDate = document.getElementById("startDate").value;
             const endDate = document.getElementById("endDate").value;
+
+            if (!location) {
+                document.getElementById("historyResult").innerHTML = "<p style='color: red;'>يرجى إدخال اسم المنطقة.</p>";
+                return;
+            }
 
             if (!startDate || !endDate) {
                 document.getElementById("historyResult").innerHTML = "<p style='color: red;'>يرجى تحديد تاريخ البداية والنهاية.</p>";
@@ -442,9 +449,25 @@ if (document.getElementById("map")) {
                 return;
             }
 
-            const lat = 30.04;
-            const lon = 31.23;
-            getPollutionData(lat, lon, null, startTimestamp, endTimestamp);
+            // جلب إحداثيات المنطقة باستخدام OpenCage Geocoding API
+            const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(location)}&key=${geoApiKey}`;
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.results.length > 0) {
+                        const { lat, lng } = data.results[0].geometry;
+                        document.getElementById("historyResult").innerHTML = `
+                            <p><strong>إحداثيات ${location}:</strong> <br> خط العرض: ${lat}, خط الطول: ${lng}</p>
+                        `;
+                        getPollutionData(lat, lng, null, startTimestamp, endTimestamp);
+                    } else {
+                        document.getElementById("historyResult").innerHTML = "<p style='color: red;'>لم يتم العثور على المنطقة.</p>";
+                    }
+                })
+                .catch(error => {
+                    console.error("خطأ في جلب إحداثيات المنطقة:", error);
+                    document.getElementById("historyResult").innerHTML = "<p style='color: red;'>خطأ في جلب إحداثيات المنطقة.</p>";
+                });
         });
 
         function getPollutionData(lat, lon, layer, start, end) {

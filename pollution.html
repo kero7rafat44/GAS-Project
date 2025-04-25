@@ -29,7 +29,7 @@
 
     <!-- قسم البحث عن إحداثيات الدول -->
     <div class="showdiv">
-        <h2>البحث عن إلتلوث العالمي</h2>
+        <h2>البحث عن التلوث العالمي</h2>
         <div class="searchandbt">
             <!-- حقل إدخال اسم الدولة -->
             <input class="searchbarp" type="text" id="countryInput" placeholder="....أدخل الاسم المطلوب" />
@@ -47,6 +47,12 @@
     <!-- منطقة عرض بيانات التلوث -->
     <div id="info"></div>
    <div class="date-range-container">
+        <!-- قسم النطاق الزمني مع حقل إدخال المنطقة -->
+        <div class="input-group">  
+          <label for="locationInput" class="form-label">اسم المنطقة:</label>
+          <input type="text" id="locationInput" name="locationInput" class="form-input" placeholder="أدخل اسم المنطقة (مثل القاهرة)">
+        </div>
+
         <div class="input-group">
           <label for="startDate" class="form-label">تاريخ البداية:</label>
           <input type="datetime-local" id="startDate" name="startDate" class="form-input">
