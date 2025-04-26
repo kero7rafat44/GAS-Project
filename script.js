@@ -344,9 +344,11 @@ if (document.getElementById("map")) {
     if (typeof L === "undefined") {
         console.error("خطأ: لم يتم تحميل Leaflet. تأكدي من إضافة <script src='https://unpkg.com/leaflet/dist/leaflet.js'>");
     } else {
-        var map = L.map("map").setView([30.2415, 31.411], 6);
+        const map = L.map('map', {
+            center: [27, 30], // مركز الخريطة
+            zoom: 6,
+            attributionControl: false,});
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution: "© OpenStreetMap contributors"
         }).addTo(map);
 
         var drawnItems = new L.FeatureGroup();
