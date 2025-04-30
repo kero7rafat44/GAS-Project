@@ -10,7 +10,8 @@
     <!-- ربط مكتبة Leaflet Draw لإضافة أدوات الرسم -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-    <!-- ربط ملف التنسيق الخاص بنا -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+      <!-- ربط ملف التنسيق الخاص بنا -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -65,6 +66,7 @@
         </div>
 
         <button id="fetchHistoryBtn" class="fetch-button">جلب البيانات التاريخية</button>
+        <button id="downloadExcelBtn" class="excel-button">تحميل كـ Excel</button>
         <div id="historyResult"></div>
       </div>
     

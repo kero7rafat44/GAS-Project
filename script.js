@@ -1,4 +1,4 @@
-//الغازات
+// الغازات
 if (document.getElementById("viewDiv")) {
     if (typeof require === "undefined") {
         console.error("خطأ: لم يتم تحميل ArcGIS JS API. تأكدي من إضافة <script src='https://js.arcgis.com/4.26/'> في gases.html");
@@ -138,7 +138,7 @@ if (document.getElementById("viewDiv")) {
                     } else {
                         console.log("لم يتم العثور على تسميات في المفتاح عند التحميل الأولي");
                     }
-                }, 150); // تأخير 1500 ميلي ثانية لضمان استقرار المفتاح
+                }, 150); // تأخير 150 ميلي ثانية لضمان استقرار المفتاح
             });
 
             // تطبيق التعديلات عند تغيير العرض (مثل التكبير/التصغير أو التحريك)
@@ -339,15 +339,20 @@ if (document.getElementById("viewDiv")) {
     }
 }
 
-//تلوث العالمي 
+// تلوث العالمي
 if (document.getElementById("map")) {
     if (typeof L === "undefined") {
         console.error("خطأ: لم يتم تحميل Leaflet. تأكدي من إضافة <script src='https://unpkg.com/leaflet/dist/leaflet.js'>");
     } else {
+        // متغيرات لتخزين البيانات التاريخية واسم المنطقة
+        let historicalData = [];
+        let lastLocation = "";
+
         const map = L.map('map', {
             center: [27, 30], // مركز الخريطة
             zoom: 6,
-            attributionControl: false,});
+            attributionControl: false,
+        });
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         }).addTo(map);
 
@@ -371,6 +376,21 @@ if (document.getElementById("map")) {
         const pollutionApiKey = "76e0a0fdb041517937c0a13896db8fa9";
 
         let countryMarker;
+
+        // إضافة مستمع لزر تحميل Excel
+        const downloadBtn = document.getElementById("downloadExcelBtn");
+        if (downloadBtn) {
+            downloadBtn.addEventListener("click", function() {
+                console.log("البيانات التاريخية قبل التحميل:", historicalData);
+                if (historicalData.length === 0) {
+                    alert("لا توجد بيانات لتحميلها. يرجى جلب البيانات التاريخية أولاً.");
+                    return;
+                }
+                downloadAsExcel(historicalData, lastLocation || "Unknown_Location");
+            });
+        } else {
+            console.error("خطأ: زر تحميل Excel (downloadExcelBtn) غير موجود في DOM");
+        }
 
         map.on('draw:created', function (e) {
             var type = e.layerType;
@@ -458,6 +478,7 @@ if (document.getElementById("map")) {
                 .then(data => {
                     if (data.results.length > 0) {
                         const { lat, lng } = data.results[0].geometry;
+                        lastLocation = location; // تخزين اسم المنطقة
                         document.getElementById("historyResult").innerHTML = `
                             <p><strong>إحداثيات ${location}:</strong> <br> خط العرض: ${lat}, خط الطول: ${lng}</p>
                         `;
@@ -498,6 +519,7 @@ if (document.getElementById("map")) {
                     output += `<h1>بيانات التلوث لشهر ${currentMonth} للعام ${currentYear}</h1>`;
 
                     if (start && end) {
+                        historicalData = []; // إعادة تعيين البيانات التاريخية
                         output += `
                             <style>
                                 table {
@@ -565,6 +587,16 @@ if (document.getElementById("map")) {
                                     <td>${pm10} µg/m³</td>
                                 </tr>
                             `;
+                            historicalData.push({
+                                "التاريخ والوقت": date,
+                                "جودة الهواء": status.replace(/ ✅| 🟡| 🟠| 🔴| ☠️/, ""), // إزالة الرموز التعبيرية
+                                "CO (µg/m³)": co,
+                                "NO₂ (µg/m³)": no2,
+                                "SO₂ (µg/m³)": so2,
+                                "O₃ (µg/m³)": o3,
+                                "PM2.5 (µg/m³)": pm2_5,
+                                "PM10 (µg/m³)": pm10
+                            });
                         });
                         output += `</tbody></table>`;
                     } else {
@@ -596,6 +628,7 @@ if (document.getElementById("map")) {
 
                     if (start && end) {
                         document.getElementById("historyResult").innerHTML = output;
+                        console.log("البيانات التاريخية بعد الجلب:", historicalData);
                     } else {
                         document.getElementById("info").innerHTML = output;
                     }
@@ -633,6 +666,7 @@ if (document.getElementById("map")) {
                     const errorMsg = "<p style='color: red;'>تعذر جلب بيانات التلوث!</p>";
                     if (start && end) {
                         document.getElementById("historyResult").innerHTML = errorMsg;
+                        historicalData = []; // إعادة تعيين البيانات في حالة الخطأ
                     } else {
                         document.getElementById("info").innerHTML = errorMsg;
                     }
@@ -641,6 +675,75 @@ if (document.getElementById("map")) {
                         layer.bindPopup(errorMsg).openPopup();
                     }
                 });
+        }
+
+        // دالة لتحميل البيانات كملف Excel
+        function downloadAsExcel(data, location) {
+            // التحقق من وجود مكتبة SheetJS
+            if (typeof XLSX === "undefined") {
+                console.error("خطأ: مكتبة SheetJS (xlsx) غير محملة. تأكد من إضافة <script src='https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'> في pollution.html");
+                alert("تعذر تحميل الملف. تأكد من تحميل مكتبة SheetJS.");
+                return;
+            }
+
+            try {
+                // التحقق من صحة البيانات
+                if (!Array.isArray(data) || data.length === 0) {
+                    console.error("خطأ: البيانات التاريخية غير صالحة أو فارغة:", data);
+                    alert("البيانات غير صالحة. يرجى جلب البيانات مرة أخرى.");
+                    return;
+                }
+
+                // تنظيف البيانات للتأكد من أن جميع القيم صالحة
+                const cleanedData = data.map(item => {
+                    const cleanedItem = {};
+                    Object.keys(item).forEach(key => {
+                        cleanedItem[key] = item[key] === null || item[key] === undefined ? "" : item[key];
+                    });
+                    return cleanedItem;
+                });
+
+                // إنشاء ورقة عمل
+                const worksheet = XLSX.utils.json_to_sheet(cleanedData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Pollution Data");
+
+                // تحديد عرض الأعمدة
+                worksheet["!cols"] = [
+                    { wch: 20 }, // التاريخ والوقت
+                    { wch: 15 }, // جودة الهواء
+                    { wch: 10 }, // CO
+                    { wch: 10 }, // NO₂
+                    { wch: 10 }, // SO₂
+                    { wch: 10 }, // O₃
+                    { wch: 10 }, // PM2.5
+                    { wch: 10 }  // PM10
+                ];
+
+                // تنظيف اسم المنطقة لتجنب الأحرف غير الصالحة
+                const cleanLocation = (location || "Unknown_Location").replace(/[^a-zA-Z0-9]/g, "_");
+                const fileName = `Pollution_Data_${cleanLocation}_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+                // طريقة بديلة لتحميل الملف باستخدام Blob
+                console.log("إنشاء ملف Excel مع اسم:", fileName);
+                console.log("محتوى workbook:", workbook);
+                const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+                const blob = new Blob([wbout], { type: "application/octet-stream" });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                console.log("تم تحميل ملف Excel بنجاح:", fileName);
+                alert("تم تحميل الملف بنجاح!");
+            } catch (error) {
+                console.error("خطأ أثناء إنشاء ملف Excel:", error, error.stack);
+                alert("حدث خطأ أثناء تحميل الملف: " + error.message + ". يرجى التحقق من وحدة التحكم لمزيد من التفاصيل.");
+            }
         }
     }
 }
