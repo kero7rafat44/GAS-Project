@@ -459,3 +459,36 @@ h1 {
     background: #1874CD;
     transform: scale(0.95);
 }
+
+.toggle-section {
+    cursor: pointer;
+    text-align: right;
+}
+
+.toggle-section h2 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 28px;
+    color: #00d4ff;
+    margin-bottom: 15px;
+}
+
+.toggle-icon {
+    font-size: 22px;
+    transition: transform 0.3s ease;
+}
+
+.toggle-content {
+    display: none;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.toggle-content.show {
+    display: block;
+}
+
+.highlight {
+    color: #00ffd5;
+    font-weight: bold;
+}
