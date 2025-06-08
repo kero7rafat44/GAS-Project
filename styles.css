@@ -466,6 +466,7 @@ h1 {
 }
 
 .toggle-section h2 {
+    flex-direction: row-reverse;
     display: flex;
     justify-content: space-between;
     align-items: center;
