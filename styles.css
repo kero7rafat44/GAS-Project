@@ -447,7 +447,7 @@ h1 {
 }
 
 .excel-button:hover {
-    background: #1C86EE;
+    background: hwb(210 11% 7%);
     transform: scale(1.05);
 }
 
@@ -509,4 +509,9 @@ body {
     vertical-align: middle;
     padding: 10px;
     border: 1px solid #ddd;
+}
+/* أنماط لكلا العنوانين */
+.container.my-5 section h2,h3 {
+    color: #00d4ff;;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
