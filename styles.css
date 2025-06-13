@@ -489,20 +489,6 @@ h1 {
     color: #101111;
     font-weight: bold;
 }
-/* /* تنسيق عام */
-body {
-    font-family: Arial, sans-serif;
-}
-.aqi-segment {
-    flex: 1;
-    text-align: center;
-    color: white;
-    font-size: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
 /* تنسيق الجدول */
 .table th, .table td {
     text-align: right;
@@ -511,7 +497,7 @@ body {
     border: 1px solid #ddd;
 }
 /* أنماط لكلا العنوانين */
-.container.my-5 section h2,h3 {
-    color: #00d4ff;;
+.container.my-5 section h2, .container.my-5 section h3 {
+    color: #00d4ff;
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }

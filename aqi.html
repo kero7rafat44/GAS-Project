@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مؤشر جودة الهواء (AQI)</title>
-    <!-- إضافة Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- إضافة ملف CSS مخصص -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- شريط التنقل (Navbar) -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">مراقبة جودة الهواء</a>
@@ -26,19 +23,20 @@
                         <a class="nav-link" href="gases.html">الغازات</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="pollution.html">التلوث العالمي</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="aqi.html">مؤشر جودة الهواء</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- محتوى الصفحة -->
     <div class="container my-5">
-        <!-- عنوان الصفحة -->
         <h1 class="text-center mb-4">مؤشر جودة الهواء (AQI)</h1>
 
-        <!-- شرح مؤشر جودة الهواء -->
-        <section class="mb-5">
+        <section class="mb-5 slide">
             <h2>ما هو مؤشر جودة الهواء (AQI)؟</h2>
             <h5> 
                 مؤشر جودة الهواء (AQI) هو مقياس يُستخدم لتقييم مستوى تلوث الهواء وتأثيره على الصحة العامة. يعتمد على قياس تركيز الملوثات الرئيسية مثل الجسيمات الدقيقة (PM2.5 وPM10)، الأوزون (O₃)، ثاني أكسيد النيتروجين (NO₂)، ثاني أكسيد الكبريت (SO₂)، وأول أكسيد الكربون (CO). يتم تصنيف AQI إلى ست فئات، كل منها يمثل مستوى مختلف من المخاطر الصحية.
@@ -93,14 +91,13 @@
                 </tbody>
             </table>
         </section>
-        <!-- خريطة IQAir -->
-        <section>
-            <h2 class="text-center">مؤشر جودة الهواء AQI</h2>
-            <iframe src="https://www.iqair.com/earth" width="100%" height="800px" frameborder="0" allowfullscreen></iframe>
-        </section>
+
+<section class="slide">
+    <h2 class="text-center">مؤشر جودة الهواء AQI</h2>
+    <div class="map-container">
+        <iframe src="https://www.iqair.com/earth" width="100%" height="800px" frameborder="0" allowfullscreen></iframe>
     </div>
 
-    <!-- إضافة Bootstrap JS وملف JavaScript مخصص -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
 </body>
