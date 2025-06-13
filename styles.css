@@ -486,9 +486,10 @@ h1 {
 }
 
 .highlight {
-    color: #101111;
+    color: #00d4ff; /* لون سماوي فاتح وواضح */
     font-weight: bold;
 }
+
 /* تنسيق الجدول */
 .table th, .table td {
     text-align: right;
