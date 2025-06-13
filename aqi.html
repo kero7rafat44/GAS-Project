@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مؤشر جودة الهواء (AQI)</title>
+    <!-- إضافة Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- إضافة ملف CSS مخصص -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- شريط التنقل (Navbar) -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">مراقبة جودة الهواء</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">الرئيسية</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="gases.html">الغازات</a>
+                    </li>
+                    <li class="nav-item">
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- محتوى الصفحة -->
+    <div class="container my-5">
+        <!-- عنوان الصفحة -->
+        <h1 class="text-center mb-4">مؤشر جودة الهواء (AQI)</h1>
+
+        <!-- شرح مؤشر جودة الهواء -->
+        <section class="mb-5">
+            <h2>ما هو مؤشر جودة الهواء (AQI)؟</h2>
+            <p>
+                مؤشر جودة الهواء (AQI) هو مقياس يُستخدم لتقييم مستوى تلوث الهواء وتأثيره على الصحة العامة. يعتمد على قياس تركيز الملوثات الرئيسية مثل الجسيمات الدقيقة (PM2.5 وPM10)، الأوزون (O₃)، ثاني أكسيد النيتروجين (NO₂)، ثاني أكسيد الكبريت (SO₂)، وأول أكسيد الكربون (CO). يتم تصنيف AQI إلى ست فئات، كل منها يمثل مستوى مختلف من المخاطر الصحية.
+            </p>
+            <h3>فئات مؤشر جودة الهواء</h3>
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>النطاق</th>
+                        <th>الفئة</th>
+                        <th>اللون</th>
+                        <th>التأثير الصحي</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0-50</td>
+                        <td>جيد</td>
+                        <td style="background-color: #00e400;">أخضر</td>
+                        <td>لا يشكل خطرًا على الصحة.</td>
+                    </tr>
+                    <tr>
+                        <td>51-100</td>
+                        <td>معتدل</td>
+                        <td style="background-color: #ffff00;">أصفر</td>
+                        <td>مقبول، لكن قد يؤثر على الأشخاص الحساسين.</td>
+                    </tr>
+                    <tr>
+                        <td>101-150</td>
+                        <td>غير صحي للفئات الحساسة</td>
+                        <td style="background-color: #ff7e00;">برتقالي</td>
+                        <td>قد يسبب مشاكل للأطفال، كبار السن، أو مرضى الربو.</td>
+                    </tr>
+                    <tr>
+                        <td>151-200</td>
+                        <td>غير صحي</td>
+                        <td style="background-color: #ff0000;">أحمر</td>
+                        <td>يمكن أن يؤثر على الجميع، خاصة مع التعرض الطويل.</td>
+                    </tr>
+                    <tr>
+                        <td>201-300</td>
+                        <td>غير صحي جدًا</td>
+                        <td style="background-color: #8f3f97;">أرجواني</td>
+                        <td>حالة طوارئ صحية، آثار خطيرة على الجميع.</td>
+                    </tr>
+                    <tr>
+                        <td>301-500</td>
+                        <td>خطير</td>
+                        <td style="background-color: #7e0023;">بني</td>
+                        <td>حالة طوارئ شديدة، يُنصح بتجنب الخروج.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <!-- خريطة IQAir -->
+        <section>
+            <h2 class="text-center">مؤشر جودة الهواء AQI</h2>
+            <iframe src="https://www.iqair.com/earth" width="100%" height="800px" frameborder="0" allowfullscreen></iframe>
+        </section>
+    </div>
+
+    <!-- إضافة Bootstrap JS وملف JavaScript مخصص -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
