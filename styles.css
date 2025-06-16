@@ -1,3 +1,6 @@
+/* ==========================================================================
+تنسيقات عامة (Global Styles)
+   ========================================================================== */
 body {
     font-family: 'Poppins', 'Arial', sans-serif;
     margin: 0;
@@ -9,6 +12,7 @@ body {
 
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
+/* تنسيقات شريط التنقل (Navbar) - يستخدم في جميع الصفحات */
 .navbar {
     background: rgb(0, 0, 0);
     padding: 17px 10px;
@@ -17,8 +21,8 @@ body {
     top: 0;
     z-index: 1000;
     display: flex;
-    justify-content: flex-start; /* ← التغيير هنا من flex-end إلى flex-start */
-    direction: rtl; /* ← الاتجاه من اليمين لليسار */
+    justify-content: flex-start;
+    direction: rtl;
 }
 
 .navbar ul {
@@ -27,7 +31,7 @@ body {
     margin: 0;
     padding: 0;
     flex-wrap: nowrap;
-    flex-direction: row-reverse; /* ← يجعل العناصر تبدأ من اليمين */
+    flex-direction: row-reverse;
 }
 
 .navbar li {
@@ -49,14 +53,13 @@ body {
     background: rgba(255, 255, 255, 0.1);
     animation: blink 0.5s infinite;
 }
-
-
 @keyframes blink {
     0% { opacity: 1; }
     50% { opacity: 0.5; }
     100% { opacity: 1; }
 }
 
+/* تنسيقات القوائم المنسدلة (Select) - تستخدم في gases.html وpollution.html */
 select {
     font-size: 16px;
     padding: 10px;
@@ -72,7 +75,64 @@ select:hover {
     background: #f0f0f0;
 }
 
-/* * أنماط صفحة الرئيسية (index.html) */
+/* تنسيقات الجدول العامة - تستخدم في aqi.html وpollution.html */
+.table th, .table td {
+    text-align: right;
+    vertical-align: middle;
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+/* تنسيقات العناوين العامة - تستخدم في index.html وpollution.html */
+.container.my-5 section h2, 
+.container.my-5 section h3 {
+    color: #00d4ff;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* تنسيقات الأقسام القابلة للطي - تستخدم في index.html */
+.toggle-section {
+    cursor: pointer;
+    text-align: right;
+}
+
+.toggle-section h2 {
+    flex-direction: row-reverse;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 28px;
+    color: #00d4ff;
+    margin-bottom: 15px;
+}
+
+.toggle-icon {
+    font-size: 22px;
+    transition: transform 0.3s ease;
+}
+
+.toggle-content {
+    display: none;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.toggle-content.show {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.highlight {
+    color: #00d4ff;
+    font-weight: bold;
+}
+
+/* ==========================================================================
+    صفحة الرئيسية (index.html)
+   ========================================================================== */
 .hero {
     height: 100vh;
     display: flex;
@@ -140,19 +200,15 @@ select:hover {
     margin: 10px 0;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* أنماط صفحة الغازات (gases.html) */
-/* ========================================= */
+/* ==========================================================================
+تنسيقات صفحة الغازات (gases.html)
+   ========================================================================== */
 #viewDiv {
     position: absolute;
-    top: 60px; 
+    top: 60px;
     left: 0;
     width: 100%;
-    height: calc(110vh - 60px - 100px); 
+    height: calc(110vh - 60px - 100px);
     border-bottom: 3px solid #00d4ff;
 }
 
@@ -277,9 +333,9 @@ select:hover {
     background: #000033;
 }
 
-/* ========================================= */
-/* أنماط صفحة التلوث (pollution.html) */
-/* ========================================= */
+/* ==========================================================================
+تنسيقات صفحة التلوث العالمي (pollution.html)
+   ========================================================================== */
 h1 {
     text-align: center;
     margin-top: 80px;
@@ -457,51 +513,4 @@ h1 {
 .excel-button:active {
     background: #1874CD;
     transform: scale(0.95);
-}
-
-.toggle-section {
-    cursor: pointer;
-    text-align: right;
-}
-
-.toggle-section h2 {
-    flex-direction: row-reverse;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 28px;
-    color: #00d4ff;
-    margin-bottom: 15px;
-}
-
-.toggle-icon {
-    font-size: 22px;
-    transition: transform 0.3s ease;
-}
-
-.toggle-content {
-    display: none;
-    animation: fadeIn 0.5s ease-in-out;
-}
-
-.toggle-content.show {
-    display: block;
-}
-
-.highlight {
-    color: #00d4ff; /* لون سماوي فاتح وواضح */
-    font-weight: bold;
-}
-
-/* تنسيق الجدول */
-.table th, .table td {
-    text-align: right;
-    vertical-align: middle;
-    padding: 10px;
-    border: 1px solid #ddd;
-}
-/* أنماط لكلا العنوانين */
-.container.my-5 section h2, .container.my-5 section h3 {
-    color: #00d4ff;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
