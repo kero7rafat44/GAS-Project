@@ -133,7 +133,7 @@ select:hover {
 /* ==========================================================================
     صفحة الرئيسية (index.html)
    ========================================================================== */
-.hero {
+.home {
     height: 100vh;
     display: flex;
     align-items: center;
@@ -142,7 +142,7 @@ select:hover {
     overflow: hidden;
 }
 
-.hero .koko {
+.hero .home {
     z-index: 2;
     font-size: 60px;
     color: #80e6f8;
