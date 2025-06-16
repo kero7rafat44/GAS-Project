@@ -115,7 +115,7 @@
             return (
                 <div className="text-white">
                     <h1 className="text-4xl text-center mb-8">توقعات مستويات الغازات (سنوي)</h1>
-                    <div className="flex justify-center mb-6 items-center">
+                    <div className="flex justify-center mb-6 items-center gap-4">
                         <span className="text-lg text-white mr-4">اختر الغاز:</span>
                         <select
                             value={selectedGas}
@@ -193,6 +193,29 @@
                         <h2 className="text-xl text-white mb-2">تأثيرات زيادة الغاز</h2>
                         <p className="mb-4">{gasImpact}</p>
                         <p>ملاحظة: التنبؤات السنوية تستند إلى الانحدار الخطي بناءً على البيانات التاريخية (2015-2024).</p>
+                        <h2 className="text-xl text-white mt-8 mb-4">خطوات حساب معادلة الانحدار الخطي</h2>
+                        <div className="text-right text-gray-300 max-w-2xl mx-auto">
+                            <p className="mb-2">معادلة الانحدار الخطي هي: <strong>y = mx + c</strong>، حيث:</p>
+                            <ul className="list-disc list-inside mb-4">
+                                <li><strong>y</strong>: تركيز الغاز (ميكروغرام/م³).</li>
+                                <li><strong>x</strong>: السنة.</li>
+                                <li><strong>m</strong>: الميل، يمثل معدل التغير السنوي في تركيز الغاز.</li>
+                                <li><strong>c</strong>: نقطة التقاطع مع المحور y، تمثل قيمة y عند x=0 (قيمة نظرية).</li>
+                            </ul>
+                            <p className="mb-2">المعادلات المستخدمة لحساب m و c هي:</p>
+                            <ul className="list-disc list-inside mb-4">
+                                <li>الميل: <strong>m = (nΣ(xy) - ΣxΣy) / (nΣ(x²) - (Σx)²)</strong></li>
+                                <li>نقطة التقاطع: <strong>c = (Σy - mΣx) / n</strong></li>
+                            </ul>
+                            <p className="mb-2">حيث:</p>
+                            <ul className="list-disc list-inside mb-4">
+                                <li><strong>n</strong>: عدد السنوات (عدد النقاط في البيانات).</li>
+                                <li><strong>Σx</strong>: مجموع السنوات.</li>
+                                <li><strong>Σy</strong>: مجموع تركيزات الغاز.</li>
+                                <li><strong>Σ(xy)</strong>: مجموع حاصل ضرب كل سنة في تركيز الغاز المقابل.</li>
+                                <li><strong>Σ(x²)</strong>: مجموع مربعات السنوات.</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             );
