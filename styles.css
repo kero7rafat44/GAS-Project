@@ -17,7 +17,8 @@ body {
     top: 0;
     z-index: 1000;
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start; /* ← التغيير هنا من flex-end إلى flex-start */
+    direction: rtl; /* ← الاتجاه من اليمين لليسار */
 }
 
 .navbar ul {
@@ -26,6 +27,7 @@ body {
     margin: 0;
     padding: 0;
     flex-wrap: nowrap;
+    flex-direction: row-reverse; /* ← يجعل العناصر تبدأ من اليمين */
 }
 
 .navbar li {
@@ -47,6 +49,7 @@ body {
     background: rgba(255, 255, 255, 0.1);
     animation: blink 0.5s infinite;
 }
+
 
 @keyframes blink {
     0% { opacity: 1; }

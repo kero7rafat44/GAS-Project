@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>توقعات جودة الهواء</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+    <script src="https://unpkg.com/papaparse@latest/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chrono-node/1.3.11/chrono.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.7/Recharts.min.js"></script>
+</head>
+<body class="bg-gray-900">
+    <!-- Rendering the navigation bar matching other pages -->
+    <nav class="navbar">
+        <ul>
+            <li><a href="index.html">الرئيسية</a></li>
+            <li><a href="gases.html">الغازات</a></li>
+            <li><a href="pollution.html">التلوث العالمي</a></li>
+            <li><a href="aqi.html">مؤشر جودة الهواء (AQI)</a></li>
+            <li><a href="https://arcg.is/1LzDX13">الاستوري ماب</a></li>
+            <li><a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vTeIGB6a5I7fEKJnwsLk1JSyssjO4eS1zzporeT-FEN4a9TXzJt8og0QNx8RfiOOg/pub?output=xlsx" download>Dashboard</a></li>
+            <li><a href="forecast.html">التوقعات</a></li>
+            <li><a href="https://www.studioroosegaarde.net/project/smog-free-tower">smog-free-tower</a></li>
+        </ul>
+    </nav>
+
+    <!-- Defining the main container with top margin to avoid overlap with fixed navbar -->
+    <div id="root" class="container mx-auto mt-20 px-4"></div>
+
+    <!-- Adding the forecast script -->
+    <script type="text/babel">
+        const Forecast = () => {
+            const [data, setData] = React.useState(null);
+            const [selectedGas, setSelectedGas] = React.useState('CO');
+            const [equation, setEquation] = React.useState('');
+            const [prediction2030, setPrediction2030] = React.useState('');
+            const [equationExplanation, setEquationExplanation] = React.useState('');
+            const [gasImpact, setGasImpact] = React.useState('');
+
+            // Gas options for annual data
+            const gasOptions = ['CO', 'No2', 'So2', 'TSP', 'Pm2.5', 'Pm10'];
+
+            // Gas-specific explanations and impacts
+            const gasDetails = {
+                'CO': {
+                    explanation: 'المعادلة y = 0.3154x - 595.3221 تشير إلى أن تركيز أول أكسيد الكربون (CO) يزداد بمعدل 0.3154 ميكروغرام/م³ سنويًا (الميل). نقطة التقاطع (-595.3221) هي قيمة نظرية عند x=0، ولا تعكس قيمة فعلية. لحساب التنبؤ لعام 2030، استبدل x بـ 2030: y = 0.3154 × 2030 - 595.3221 = 44.93 ميكروغرام/م³. هذا يعني أن تركيز CO سيرتفع تدريجيًا إذا استمرت الاتجاهات الحالية.',
+                    impact: 'زيادة تركيز CO إلى 44.93 ميكروغرام/م³ بحلول 2030 قد لا تتجاوز معايير WHO (4 ملغ/م³ يوميًا، أي 4000 ميكروغرام/م³)، لكن الزيادة الطفيفة قد تسبب صداعًا، دوارًا، أو مشاكل قلبية للأشخاص الحساسين، خاصة في المناطق المزدحمة. مصادر CO تشمل عوادم السيارات، مما يتطلب تحسين الوقود أو التحول إلى السيارات الكهربائية.'
+                },
+                'No2': {
+                    explanation: 'المعادلة y = -0.0001x + 2.9394 تشير إلى انخفاض طفيف جدًا في تركيز ثاني أكسيد النيتروجين (No2) بمعدل -0.0001 ميكروغرام/م³ سنويًا (الميل السلبي). نقطة التقاطع (2.9394) هي القيمة النظرية عند x=0. لحساب التنبؤ لعام 2030: y = -0.0001 × 2030 + 2.9394 = 2.82 ميكروغرام/م³. هذا يعكس استقرار تركيز No2 تقريبًا.',
+                    impact: 'تركيز No2 عند 2.82 ميكروغرام/م³ في 2030 أقل من معيار WHO السنوي (10 ميكروغرام/م³)، مما يشير إلى مخاطر صحية منخفضة. ومع ذلك، No2 قد يسبب تهيج الجهاز التنفسي أو الربو عند التعرض المزمن. الحفاظ على هذا المستوى يتطلب استمرار التحكم في انبعاثات المركبات والصناعات.'
+                },
+                'So2': {
+                    explanation: 'المعادلة y = 0.0167x + 13.7633 تشير إلى زيادة طفيفة في تركيز ثاني أكسيد الكبريت (So2) بمعدل 0.0167 ميكروغرام/م³ سنويًا. نقطة التقاطع (13.7633) هي قيمة نظرية. لحساب التنبؤ لعام 2030: y = 0.0167 × 2030 + 13.7633 = 47.72 ميكروغرام/م³. هذا يعني ارتفاعًا بسيطًا في So2 إذا استمرت الاتجاهات.',
+                    impact: 'تركيز So2 عند 47.72 ميكروغرام/م³ في 2030 يتجاوز معيار WHO اليومي (40 ميكروغرام/م³)، مما قد يسبب تهيج الجهاز التنفسي، خاصة لمرضى الربو. بيئيًا، So2 يساهم في الأمطار الحمضية، مما يضر بالتربة والنباتات. يجب تقليل انبعاثات المصانع ومحطات الطاقة.'
+                },
+                'TSP': {
+                    explanation: 'المعادلة y = 12.7939x - 22507.2606 تشير إلى زيادة كبيرة في الجسيمات الصلبة الكلية (TSP) بمعدل 12.7939 ميكروغرام/م³ سنويًا. نقطة التقاطع (-22507.2606) هي قيمة نظرية. لحساب التنبؤ لعام 2030: y = 12.7939 × 2030 - 22507.2606 = 3464.44 ميكروغرام/م³. هذا يعكس تدهورًا كبيرًا في جودة الهواء.',
+                    impact: 'تركيز TSP عند 3464.44 ميكروغرام/م³ في 2030 مرتفع جدًا مقارنة بمعايير PM10 لـ WHO (15 ميكروغرام/م³ سنويًا)، مما يزيد من أمراض الرئة والقلب، ويقلل الرؤية، ويؤثر على النباتات. مصادر TSP تشمل الغبار والبناء، مما يتطلب تحسين التحكم في الغبار.'
+                },
+                'Pm2.5': {
+                    explanation: 'المعادلة y = 0.0008x + 17.8545 تشير إلى زيادة طفيفة في الجسيمات الدقيقة (Pm2.5) بمعدل 0.0008 ميكروغرام/م³ سنويًا. نقطة التقاطع (17.8545) هي قيمة نظرية. لحساب التنبؤ لعام 2030: y = 0.0008 × 2030 + 17.8545 = 19.58 ميكروغرام/م³. هذا يعني ارتفاعًا بسيطًا في Pm2.5.',
+                    impact: 'تركيز Pm2.5 عند 19.58 ميكروغرام/م³ في 2030 يتجاوز معيار WHO السنوي (5 ميكروغرام/م³)، مما يزيد من مخاطر أمراض القلب، الرئة، والسكتات الدماغية، خاصة للأطفال وكبار السن. يجب تقليل انبعاثات الاحتراق (مثل الديزل) للحد من هذا الخطر.'
+                },
+                'Pm10': {
+                    explanation: 'المعادلة y = 0.0022x + 60.8278 تشير إلى زيادة طفيفة في الجسيمات الخشنة (Pm10) بمعدل 0.0022 ميكروغرام/م³ سنويًا. نقطة التقاطع (60.8278) هي قيمة نظرية. لحساب التنبؤ لعام 2030: y = 0.0022 × 2030 + 60.8278 = 65.26 ميكروغرام/م³. هذا يعكس زيادة طفيفة في Pm10.',
+                    impact: 'تركيز Pm10 عند 65.26 ميكروغرام/م³ في 2030 يتجاوز معيار WHO السنوي (15 ميكروغرام/م³)، مما يسبب تهيج العينين، الحلق، والرئتين، ويزيد من أمراض الجهاز التنفسي. مصادر Pm10 تشمل الغبار والانبعاثات الصناعية، مما يتطلب ضوابط بيئية أكثر صرامة.'
+                }
+            };
+
+            // Loading the prediction data
+            React.useEffect(() => {
+                fetch('gas_predictions.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error('Failed to load gas_predictions.json');
+                        return response.json();
+                    })
+                    .then(jsonData => {
+                        const gasData = jsonData.annual[selectedGas];
+                        const combinedData = [
+                            ...gasData.historical.map(([date, value]) => ({ date, value: parseFloat(value.toFixed(2)) })),
+                            ...gasData.future.map(([date, value]) => ({ date, value: parseFloat(value.toFixed(2)), isFuture: true }))
+                        ];
+                        setData(combinedData);
+                        setEquation(gasData.equation);
+                        // Set 2030 prediction
+                        const pred2030 = gasData.future.find(([year]) => year === '2030')[1].toFixed(2);
+                        setPrediction2030(`التنبؤ لـ ${selectedGas === 'No2' ? 'NO₂' : selectedGas === 'So2' ? 'SO₂' : selectedGas === 'Pm2.5' ? 'PM2.5' : selectedGas === 'Pm10' ? 'PM10' : selectedGas} في عام 2030: ${pred2030} ميكروغرام/م³`);
+                        // Set equation explanation and gas impact
+                        setEquationExplanation(gasDetails[selectedGas].explanation);
+                        setGasImpact(gasDetails[selectedGas].impact);
+                    })
+                    .catch(error => console.error('خطأ في تحميل التنبؤات:', error));
+            }, [selectedGas]);
+
+            // Handling gas selection change
+            const handleGasChange = (event) => {
+                setSelectedGas(event.target.value);
+            };
+
+            // Rendering loading state
+            if (!data) {
+                return <div className="text-center text-white text-xl">جاري تحميل البيانات...</div>;
+            }
+
+            // Generate ticks for X-axis (2015 to 2030)
+            const years = Array.from({length: 16}, (_, i) => String(2015 + i)); // ["2015", "2016", ..., "2030"]
+
+            // Rendering the forecast chart
+            return (
+                <div className="text-white">
+                    <h1 className="text-4xl text-center mb-8">توقعات مستويات الغازات (سنوي)</h1>
+                    <div className="flex justify-center mb-6 items-center">
+                        <span className="text-lg text-white mr-4">اختر الغاز:</span>
+                        <select
+                            value={selectedGas}
+                            onChange={handleGasChange}
+                            className="text-base p-2 rounded bg-white text-gray-800 hover:bg-gray-100"
+                        >
+                            {gasOptions.map(gas => (
+                                <option key={gas} value={gas}>
+                                    {gas === 'No2' ? 'NO₂' : gas === 'So2' ? 'SO₂' : gas === 'Pm2.5' ? 'PM2.5' : gas === 'Pm10' ? 'PM10' : gas}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <Recharts.ResponsiveContainer width="100%" height={400}>
+                            <Recharts.LineChart 
+                                data={data}
+                                margin={{ top: 20, right: 50, left: 50, bottom: 20 }}
+                            >
+                                <Recharts.CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                                <Recharts.XAxis 
+                                    dataKey="date" 
+                                    stroke="#fff" 
+                                    fontSize={12} 
+                                    tickFormatter={(date) => date}
+                                    angle={-45}
+                                    textAnchor="end"
+                                    height={60}
+                                    domain={['2015', '2030']}
+                                    ticks={years}
+                                    interval={0}
+                                    padding={{ right: 20 }}
+                                    allowDataOverflow={true}
+                                />
+                                <Recharts.YAxis 
+                                    stroke="#fff" 
+                                    fontSize={12} 
+                                    label={{ 
+                                        value: 'ميكروغرام/م³', 
+                                        angle: -90, 
+                                        position: 'insideRight', 
+                                        fill: '#fff',
+                                        offset: 20,
+                                        dx: -10
+                                    }} 
+                                />
+                                <Recharts.Tooltip
+                                    contentStyle={{ backgroundColor: '#333', border: 'none', color: '#fff' }}
+                                    formatter={(value) => `${value} ميكروغرام/م³`}
+                                    labelFormatter={(label) => `السنة: ${label}`}
+                                    itemSorter={() => -1}
+                                />
+                                <Recharts.Legend 
+                                    formatter={(value) => (
+                                        <span>
+                                            مستوى الغاز (2015-2024: بيانات تاريخية، 2025-2030: بيانات مستقبلية)
+                                        </span>
+                                    )} 
+                                />
+                                <Recharts.Line
+                                    type="monotone"
+                                    dataKey="value"
+                                    stroke="#00d4ff"
+                                    strokeDasharray={data.some(d => d.isFuture) ? "5 5" : "0"}
+                                    dot={false}
+                                />
+                            </Recharts.LineChart>
+                        </Recharts.ResponsiveContainer>
+                    </div>
+                    <div className="text-center mt-4 text-gray-400 max-w-2xl mx-auto">
+                        <p className="mb-2">المعادلة الحسابية: {equation} (حيث x هي السنة و y هي تركيز الغاز)</p>
+                        <p className="mb-4">{prediction2030}</p>
+                        <h2 className="text-xl text-white mb-2">شرح المعادلة</h2>
+                        <p className="mb-4">{equationExplanation}</p>
+                        <h2 className="text-xl text-white mb-2">تأثيرات زيادة الغاز</h2>
+                        <p className="mb-4">{gasImpact}</p>
+                        <p>ملاحظة: التنبؤات السنوية تستند إلى الانحدار الخطي بناءً على البيانات التاريخية (2015-2024).</p>
+                    </div>
+                </div>
+            );
+        };
+
+        // Rendering the component
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Forecast />);
+    </script>
+</body>
+</html>
